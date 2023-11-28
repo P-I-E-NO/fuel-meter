@@ -1,10 +1,15 @@
-FROM rust:1.73
-RUN useradd --user-group --system --create-home --no-log-init dockerissimo
+FROM rust:1.74-alpine3.17 as builder
+
+RUN apk add --no-cache musl-dev openssl-dev openssl-libs-static pkgconf git libpq-dev
+
+ENV SYSROOT=/dummy
+ENV LIBPQ_STATIC=1
+
 WORKDIR /code
-RUN chown dockerissimo:dockerissimo -R /code
-USER dockerissimo
-COPY --chown=dockerissimo:dockerissimo ./src /code/src
-COPY --chown=dockerissimo:dockerissimo ./Cargo.toml /code/Cargo.toml
-RUN cargo install cargo-watch
-RUN cargo build
-# ENTRYPOINT ["./wait-for", "db:", "--", "nodemon"] # for dev purposes only
+COPY ./src /code/src
+COPY ./Cargo.toml /code/Cargo.toml
+RUN cargo build --bins --release
+
+FROM scratch
+COPY --from=builder /code/target/release/fuel-meter /
+ENTRYPOINT [ "./fuel-meter" ]
