@@ -1,0 +1,42 @@
+version: '3.9'
+
+networks:
+  dockerissimo-net:
+    name: dockerissimo-net
+
+volumes:
+  db_pgdata:
+  db_data:
+
+services:
+  postgres_db:
+    container_name: dockerissimo-postgres
+    image: postgres:16.0
+    networks:
+      - dockerissimo-net
+    environment:
+      - POSTGRES_USER=dockerissimo_rust
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=fantastic_db
+    #volumes:
+    #  - db_data:/var/lib/postgresql/data
+    #  - db_pgdata:/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+  app:
+    container_name: dockerissimo-rust
+    build:
+      context: .
+      network: host
+    depends_on:
+      - postgres_db
+    networks:
+      - dockerissimo-net
+    environment:
+      - CONN_URI=postgresql://dockerissimo_rust:pass@postgres_db:5432/fantastic_db
+      - RUST_LOG=trace
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/code/src
+    entrypoint: ["cargo", "watch", "-x", "run -- --conf-path=2 --templates-path=4"]
