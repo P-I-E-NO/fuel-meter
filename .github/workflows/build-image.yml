@@ -5,7 +5,7 @@ on:
         branches: [main]
 
 env:
-  REGISTRY_IMAGE: emilianomaccaferri/pronto-fuel-meter
+  REGISTRY_IMAGE: emilianomaccaferri/pieno-fuel-meter
 
 jobs:
     build:
