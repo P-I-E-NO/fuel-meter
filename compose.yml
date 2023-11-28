@@ -11,24 +11,19 @@ services:
       - fuel-meter-net
     ports:
       - "60000:6379"
-  #api:
-  #  container_name: fuel-meter-api
-  #  build:
-  #    context: .
-  #    network: host
-  #  depends_on:
-  #    - queue
-  #  networks:
-  #    - fuel-meter-net
-  #  ports:
-  #    - "3000:3000"
-  #  environment:
-  #    - HTTP_PORT=3000
-  #    - APP_NAME=fuel-meter-api
-  #    - REDIS_URL=redis://queue
-  #    - JWT_KEY=poggone
-  #    - RUST_BACKTRACE=1
-  #    - RUST_LOG=trace
-  #  volumes:
-  #    - ./src:/code/src
-  #  entrypoint: ["cargo", "watch", "-x", "run -- --conf-path=2 --templates-path=4"]
+  api:
+    container_name: fuel-meter-api
+    image: test_rust
+    depends_on:
+      - queue
+    networks:
+      - fuel-meter-net
+    ports:
+      - "3000:3000"
+    environment:
+      - HTTP_PORT=3000
+      - APP_NAME=fuel-meter-api
+      - REDIS_URL=redis://queue
+      - JWT_KEY=poggone
+      - RUST_BACKTRACE=1
+      - RUST_LOG=trace
