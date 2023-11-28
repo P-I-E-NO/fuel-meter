@@ -1,8 +1,8 @@
-use axum::{response::Response, extract::State, http::{Request, HeaderMap, StatusCode}, middleware::Next, body::Body};
+use axum::{response::Response, http::{Request, StatusCode}, middleware::Next, body::Body};
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Serialize, Deserialize};
 
-use crate::web::{AppState, errors::HttpError, extractors::token::Token};
+use crate::web::{errors::HttpError, extractors::token::Token};
 use std::env::var;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
