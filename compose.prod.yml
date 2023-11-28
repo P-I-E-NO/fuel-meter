@@ -1,0 +1,25 @@
+version: '3.9'
+
+networks:
+  fuel-meter-net:
+    name: fuel-meter-net
+services:
+  redis:
+    container_name: fuel-meter-redis
+    image: redis:7.2.3
+    networks:
+      - dockerissimo-net
+  api:
+    container_name: fuel-meter-api
+    build:
+      context: .
+      network: host
+    depends_on:
+      - redis
+    networks:
+      - fuel-meter-net
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/code/src
+    entrypoint: ["cargo", "run"]

@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use axum::{
     extract::{rejection::JsonRejection, FromRequest},
     http::{Request, StatusCode},
-    Json,
+    Json, body::Body,
 };
 use validator::Validate;
 
@@ -11,17 +11,16 @@ use crate::web::errors::HttpError;
 pub struct ValidatedJson<T>(pub T);
 
 #[async_trait]
-impl<S, B, T> FromRequest<S, B> for ValidatedJson<T>
+impl<S, T> FromRequest<S> for ValidatedJson<T>
 where
-    axum::Json<T>: FromRequest<S, B, Rejection = JsonRejection>,
+    axum::Json<T>: FromRequest<S, Rejection = JsonRejection>,
     S: Send + Sync,
     T: Validate,
-    B: Send + 'static,
 {
     type Rejection = HttpError;
 
     async fn from_request(
-        req: Request<B>,
+        req: Request<Body>,
         state: &S,
     ) -> Result<Self, Self::Rejection> {
         let (parts, body) = req.into_parts();

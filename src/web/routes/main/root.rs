@@ -1,30 +1,36 @@
-use crate::web::{extractors::validate_body::ValidatedJson, AppState};
-use axum::{extract::State, Json};
+use crate::web::{extractors::validate_body::ValidatedJson, AppState, middlewares::auth::Claims};
+use axum::{extract::State, Json, Extension};
+use jsonwebtoken::TokenData;
 use serde::Deserialize;
 use serde_json::{json, Value};
-use sqlx::Acquire;
 use validator::Validate;
+use redis::AsyncCommands;
 
 use crate::web::errors::HttpError;
 
 #[derive(Deserialize, Validate)]
 pub struct Test {
-    #[validate(range(min = 1, max = 100))]
-    t: i32,
+    value: u8,
 }
 
 pub async fn handler(
     State(s): State<AppState>, // debug handler
+    Extension(jwt): Extension<TokenData<Claims>>,
     ValidatedJson(body): ValidatedJson<Test>,
 ) -> Result<Json<Value>, HttpError> {
-    let mut conn = s.pool.acquire().await?;
-    let mut tx = conn.begin().await?;
-
-    /* stuff */
-
-    tx.commit().await?;
+    let mut conn = s.redis.get_async_connection().await?;
+    
+    redis::cmd("XADD")
+        .arg("streams:notifications")
+        .arg("*")
+        .arg("user_id")
+        .arg(jwt.claims.user_id)
+        .arg("value")
+        .arg(body.value)
+        .query_async(&mut conn)
+        .await?;
 
     Ok(Json(
-        json!({ "success": true, "message": "welcome to dockerissimo-rust" }),
+        json!({ "success": true, "message": "topic updated" }),
     ))
 }
