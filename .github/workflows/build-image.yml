@@ -45,7 +45,7 @@ jobs:
               with:
                 context: .
                 platforms: ${{ matrix.platform }}
-                tags: ${{ env.REGISTRY_IMAGE }}:${{ github.sha }}
+                tags: ${{ github.sha }},latest
                 labels: ${{ steps.meta.outputs.labels }}
                 outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
             - name: Export digest
