@@ -1,6 +1,6 @@
 use std::env::var;
 
-use crate::web::{extractors::validate_body::ValidatedJson, AppState, middlewares::auth::Claims};
+use crate::{web::{extractors::validate_body::ValidatedJson, AppState, middlewares::auth::Claims}, log_util::LoggableOutcome};
 use axum::{extract::State, Json, Extension};
 use jsonwebtoken::TokenData;
 use serde::Deserialize;
@@ -25,7 +25,7 @@ pub async fn handler(
     ValidatedJson(body): ValidatedJson<Test>,
 ) -> Result<Json<Value>, HttpError> {
 
-    let mut conn = s.redis.get_async_connection().await?;
+    let mut conn = s.redis.get_async_connection().await.log_err_to_error("couldn't get redis connection")?;
     
     redis::cmd("XADD")
         .arg(var("STREAM_NAME").unwrap())
