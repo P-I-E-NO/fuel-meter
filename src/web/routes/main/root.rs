@@ -1,3 +1,5 @@
+use std::env::var;
+
 use crate::web::{extractors::validate_body::ValidatedJson, AppState, middlewares::auth::Claims};
 use axum::{extract::State, Json, Extension};
 use jsonwebtoken::TokenData;
@@ -26,7 +28,7 @@ pub async fn handler(
     let mut conn = s.redis.get_async_connection().await?;
     
     redis::cmd("XADD")
-        .arg("streams:notifications")
+        .arg(var("STREAM_NAME").unwrap())
         .arg("*")
         .arg("user_id")
         .arg(jwt.claims.user_id)
