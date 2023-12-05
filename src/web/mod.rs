@@ -4,20 +4,21 @@ pub mod middlewares;
 mod routes;
 
 use std::env;
-use axum::{extract::{FromRef, State}, routing::post, Router, middleware, http::Request};
+use axum::{routing::post, Router, middleware};
 use log::info;
 use env::var;
 
 use crate::web::middlewares::auth::auth;
-#[derive(Clone, FromRef)]
+#[derive(Clone)]
 pub struct AppState {
-    redis: redis::Client
+    redis: redis::Client,
+    stream_name: String,
 }
 impl AppState {
     pub async fn new() -> Result<AppState, anyhow::Error> {
         info!("connecting to redis");
         let redis = redis::Client::open(var("REDIS_URL").unwrap()).unwrap();
-        Ok(AppState { redis })
+        Ok(AppState { redis, stream_name: var("REDIS_STREAM").unwrap() })
     }
 }
 
@@ -34,6 +35,7 @@ pub fn build_router(state: AppState) -> Router {
     app
 }
 
+#[cfg(test)]
 pub fn build_test_router() -> Router {
     let app = Router::new()
         .route(

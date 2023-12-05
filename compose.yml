@@ -27,3 +27,4 @@ services:
       - JWT_KEY=poggone
       - RUST_BACKTRACE=1
       - RUST_LOG=trace
+      - REDIS_STREAM=streams:notifications

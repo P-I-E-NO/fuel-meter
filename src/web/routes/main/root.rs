@@ -23,10 +23,13 @@ pub async fn handler(
     ValidatedJson(body): ValidatedJson<Test>,
 ) -> Result<Json<Value>, HttpError> {
 
-    let mut conn = s.redis.get_async_connection().await.log_err_to_error("couldn't get redis connection")?;
+    let mut conn = s.redis
+        .get_async_connection()
+        .await
+        .log_err_to_error("couldn't get redis connection")?;
     
     redis::cmd("XADD")
-        .arg("streams:notifications")
+        .arg(s.stream_name)
         .arg("*")
         .arg("user_id")
         .arg(jwt.claims.user_id)
