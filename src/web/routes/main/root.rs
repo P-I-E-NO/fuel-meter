@@ -1,3 +1,5 @@
+use std::env::var;
+
 use crate::{web::{extractors::validate_body::ValidatedJson, AppState, middlewares::auth::Claims}, log_util::LoggableOutcome};
 use axum::{extract::State, Json, Extension};
 use jsonwebtoken::TokenData;
@@ -29,7 +31,11 @@ pub async fn handler(
         .log_err_to_error("couldn't get redis connection")?;
     
     redis::cmd("XADD")
+<<<<<<< HEAD
         .arg(s.stream_name)
+=======
+        .arg(var("STREAM_NAME").unwrap())
+>>>>>>> refs/remotes/origin/main
         .arg("*")
         .arg("user_id")
         .arg(jwt.claims.user_id)
