@@ -31,11 +31,7 @@ pub async fn handler(
         .log_err_to_error("couldn't get redis connection")?;
     
     redis::cmd("XADD")
-<<<<<<< HEAD
         .arg(s.stream_name)
-=======
-        .arg(var("STREAM_NAME").unwrap())
->>>>>>> refs/remotes/origin/main
         .arg("*")
         .arg("user_id")
         .arg(jwt.claims.user_id)
