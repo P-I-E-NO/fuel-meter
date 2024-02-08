@@ -13,7 +13,9 @@ services:
       - "60000:6379"
   api:
     container_name: fuel-meter-api
-    image: test_rust
+    build:
+      context: .
+      network: host
     depends_on:
       - queue
     networks:

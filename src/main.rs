@@ -15,31 +15,3 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, router).await.unwrap();
 }
-
-#[cfg(test)]
-mod tests {
-    use axum::{http::{Request, header::AUTHORIZATION, StatusCode}, body::Body};
-    use serde_json::Value;
-    use crate::web::build_test_router;
-
-    use super::web::build_app;
-    use tower::{Service, ServiceExt};
-
-    #[tokio::test]
-    async fn no_auth_header() {
-        let app = build_test_router();
-
-        let response = app
-            .oneshot(
-                Request::builder()
-                    .uri("/test-auth-middleware")
-                    .body(Body::empty()).unwrap()
-                )
-            .await
-            .unwrap();
-        
-        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
-        dbg!(response.body());
-
-    }
-}

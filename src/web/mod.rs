@@ -34,14 +34,3 @@ pub fn build_router(state: AppState) -> Router {
         .with_state(state);
     app
 }
-
-#[cfg(test)]
-pub fn build_test_router() -> Router {
-    let app = Router::new()
-        .route(
-            "/test-auth-middleware", 
-            post(routes::test::auth_test).layer(middleware::from_fn(auth))
-        );
-
-    app
-}

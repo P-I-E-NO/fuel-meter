@@ -9,10 +9,8 @@ use validator::Validate;
 use crate::web::errors::HttpError;
 
 #[derive(Deserialize, Validate)]
-pub struct Test {
-    value: u8,
-    lat: String,
-    lon: String
+pub struct LowFuelRequest{
+    value: u8
 }
 
 /*
@@ -22,7 +20,7 @@ pub struct Test {
 pub async fn handler(
     State(s): State<AppState>,
     Extension(jwt): Extension<TokenData<Claims>>,
-    ValidatedJson(body): ValidatedJson<Test>,
+    ValidatedJson(body): ValidatedJson<LowFuelRequest>,
 ) -> Result<Json<Value>, HttpError> {
 
     let mut conn = s.redis
@@ -37,10 +35,6 @@ pub async fn handler(
         .arg(jwt.claims.user_id)
         .arg("value")
         .arg(body.value)
-        .arg("lat")
-        .arg(body.lat)
-        .arg("lon")
-        .arg(body.lon)
         .query_async(&mut conn)
         .await?;
 
