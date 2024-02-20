@@ -1,0 +1,15 @@
+name: build image on release
+
+on:
+  push:
+    tags: 
+      - v*
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  push-build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -X POST https://hooks.macca.cloud/pieno/build/fuel-meter?tag=${{ github.ref_name }}
