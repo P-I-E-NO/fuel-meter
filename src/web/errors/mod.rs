@@ -63,7 +63,8 @@ impl From<JoinError> for HttpError {
     }
 }
 impl From<jsonwebtoken::errors::Error> for HttpError {
-    fn from(_: jsonwebtoken::errors::Error) -> Self {
+    fn from(e: jsonwebtoken::errors::Error) -> Self {
+        dbg!(&e.to_string());
         Self::Simple(StatusCode::INTERNAL_SERVER_ERROR, "bad_jwt".to_string()) // ErrorKind implements Display!
     }
 }
