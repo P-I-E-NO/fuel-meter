@@ -1,8 +1,5 @@
-use std::env::var;
-
-use crate::{web::{extractors::validate_body::ValidatedJson, AppState, middlewares::auth::Claims}, log_util::LoggableOutcome};
-use axum::{extract::State, Json, Extension};
-use jsonwebtoken::TokenData;
+use crate::{log_util::LoggableOutcome, web::{dto::{car_claims::CarClaims, Claim}, extractors::{token::Token, validate_body::ValidatedJson}, AppState}};
+use axum::{extract::State, http::{HeaderMap, StatusCode}, Json};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use validator::Validate;
@@ -19,7 +16,8 @@ pub struct LowFuelRequest{
 */
 pub async fn handler(
     State(s): State<AppState>,
-    Extension(jwt): Extension<TokenData<Claims>>,
+    Token(token): Token<Claim<CarClaims>>,
+    headers: HeaderMap,
     ValidatedJson(body): ValidatedJson<LowFuelRequest>,
 ) -> Result<Json<Value>, HttpError> {
 
@@ -27,19 +25,28 @@ pub async fn handler(
         .get_async_connection()
         .await
         .log_err_to_error("couldn't get redis connection")?;
-    
-    redis::cmd("XADD")
-        .arg(s.stream_name)
-        .arg("*")
-        .arg("user_id")
-        .arg(jwt.claims.user_id)
-        .arg("value")
-        .arg(body.value)
-        .query_async(&mut conn)
-        .await?;
 
-    Ok(Json(
-        json!({ "success": true, "message": "topic_updated" }),
-    ))
+    if let Some(jwt_header) = headers.get("Authorization") {
+        let jwt_split: Vec<&str> = jwt_header.to_str().unwrap().split("Bearer ").collect(); // this should be ok, since Token(token) passed
+        
+        let token_data = token.data();
+        redis::cmd("XADD")
+            .arg(s.stream_name)
+            .arg("*")
+            .arg("user_id")
+            .arg(&token_data.owner)
+            .arg("value")
+            .arg(body.value)
+            .arg("car_token")
+            .arg(jwt_split[1])
+            .query_async(&mut conn)
+            .await?;
+
+        Ok(Json(
+            json!({ "success": true, "message": "topic_updated" }),
+        ))
+    }else{
+        Err(HttpError::Simple(StatusCode::BAD_REQUEST, "huh?".to_string()))
+    }
 
 }

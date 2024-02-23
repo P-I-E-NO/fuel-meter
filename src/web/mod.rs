@@ -1,14 +1,13 @@
 mod errors;
 pub mod extractors;
-pub mod middlewares;
+pub mod dto;
 mod routes;
 
 use std::env;
-use axum::{routing::post, Router, middleware};
+use axum::{routing::post, Router};
 use log::info;
 use env::var;
 
-use crate::web::middlewares::auth::auth;
 #[derive(Clone)]
 pub struct AppState {
     redis: redis::Client,
@@ -30,7 +29,6 @@ pub async fn build_app() -> Router {
 pub fn build_router(state: AppState) -> Router {
     let app = Router::new()
         .route("/", post(routes::main::root::handler))
-        .layer(middleware::from_fn_with_state(state.clone(), auth))
         .with_state(state);
     app
 }

@@ -34,7 +34,7 @@ where
                     StatusCode::BAD_REQUEST,
                 )
             })?;
-
+        
         j.validate()?;
 
         Ok(Self(j))

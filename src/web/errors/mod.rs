@@ -8,6 +8,7 @@ use axum::{
 };
 use redis::RedisError;
 use serde_json::json;
+use tokio::task::JoinError;
 use validator::{ValidationErrors, ValidationErrorsKind};
 
 pub enum HttpError {
@@ -37,22 +38,35 @@ impl IntoResponse for HttpError {
                 (code, Json(json!({ "success": false, "error": msg })))
             }
         };
+
         tuple_response.into_response()
     }
 }
 
 impl From<JsonRejection> for HttpError {
+    // error while parsing invalid json
     fn from(err: JsonRejection) -> Self {
-        HttpError::ParsingError("invalid_body".to_owned(), err.status())
+        Self::ParsingError("invalid_body".to_owned(), err.status())
     }
 }
 
 impl From<ValidationErrors> for HttpError {
+    // error when validating structs
     fn from(err: ValidationErrors) -> Self {
         Self::InvalidFieldsError(err.into_errors())
     }
 }
-
+impl From<JoinError> for HttpError {
+    // this is tokio's blocking task error
+    fn from(_: JoinError) -> Self {
+        Self::Simple(StatusCode::INTERNAL_SERVER_ERROR, "async_error".to_string())
+    }
+}
+impl From<jsonwebtoken::errors::Error> for HttpError {
+    fn from(_: jsonwebtoken::errors::Error) -> Self {
+        Self::Simple(StatusCode::INTERNAL_SERVER_ERROR, "bad_jwt".to_string()) // ErrorKind implements Display!
+    }
+}
 impl From<RedisError> for HttpError {
     fn from(_: RedisError) -> Self {
         Self::Simple(StatusCode::INTERNAL_SERVER_ERROR, "fatal_error".to_string())

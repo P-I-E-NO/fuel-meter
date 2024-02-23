@@ -9,8 +9,6 @@ services:
     image: redis:7.2.3
     networks:
       - fuel-meter-net
-    ports:
-      - "60000:6379"
   api:
     container_name: fuel-meter-api
     build:
@@ -21,12 +19,12 @@ services:
     networks:
       - fuel-meter-net
     ports:
-      - "3000:3000"
+      - "3002:3000"
     environment:
       - HTTP_PORT=3000
       - APP_NAME=fuel-meter-api
       - REDIS_URL=redis://queue
-      - JWT_KEY=poggone
+      - JWT_KEY=Poggaceo
       - RUST_BACKTRACE=1
       - RUST_LOG=trace
       - REDIS_STREAM=streams:notifications
