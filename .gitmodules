@@ -1,0 +1,3 @@
+[submodule "cloud-migrations"]
+	path = cloud-migrations
+	url = https://github.com/P-I-E-NO/cloud-migrations

@@ -1,4 +1,4 @@
-FROM rust:1.76
+FROM rust:bookworm
 RUN useradd --user-group --system --create-home --no-log-init dockerissimo
 WORKDIR /code
 RUN chown dockerissimo:dockerissimo -R /code
