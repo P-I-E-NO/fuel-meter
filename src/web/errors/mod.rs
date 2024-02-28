@@ -6,6 +6,7 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
+use log::info;
 use redis::RedisError;
 use serde_json::json;
 use tokio::task::JoinError;
@@ -64,7 +65,7 @@ impl From<JoinError> for HttpError {
 }
 impl From<jsonwebtoken::errors::Error> for HttpError {
     fn from(e: jsonwebtoken::errors::Error) -> Self {
-        dbg!(&e.to_string());
+        info!("{}", &e.to_string());
         Self::Simple(StatusCode::INTERNAL_SERVER_ERROR, "bad_jwt".to_string()) // ErrorKind implements Display!
     }
 }
